@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildIQ — AI Readiness Framework</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f5f7f4;
+    --surface: #ffffff;
+    --surface2: #f0f4ee;
+    --border: #dde6d8;
+    --border2: #b8d4a8;
+    --text: #1a2e1a;
+    --text2: #4a6648;
+    --text3: #7a9878;
+    --accent: #006b3c;
+    --accent-light: #e8f4ed;
+    --accent-mid: #4d9e6e;
+    --accent-hover: #005530;
+    --red: #c0392b;
+    --amber: #d4850a;
+    --green: #006b3c;
+    --red-light: #fdf0ee;
+    --amber-light: #fdf6e8;
+    --green-light: #e8f4ed;
+  }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+
+  /* Header */
+  .header {
+    background: var(--accent);
+    padding: 44px 40px 36px;
+  }
+  .header-inner { max-width: 780px; margin: 0 auto; }
+  .header-label {
+    font-size: 11px; letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.65);
+    text-transform: uppercase; margin-bottom: 12px; font-weight: 500;
+  }
+  .header h1 {
+    font-size: 48px; line-height: 1.05; color: #ffffff;
+    margin-bottom: 12px; letter-spacing: -0.02em; font-weight: 300;
+  }
+  .header h1 strong { font-weight: 700; color: #a8e6c0; }
+  .header p { font-size: 14px; color: rgba(255,255,255,0.75); max-width: 520px; line-height: 1.7; }
+
+  /* Progress */
+  .progress-section {
+    position: sticky; top: 0; z-index: 10;
+    background: #ffffff;
+    border-bottom: 1px solid var(--border);
+    padding: 13px 40px;
+    box-shadow: 0 2px 8px rgba(0,107,60,0.06);
+  }
+  .progress-inner { max-width: 780px; margin: 0 auto; display: flex; align-items: center; gap: 18px; }
+  .progress-label { font-size: 11px; letter-spacing: 0.1em; color: var(--text3); text-transform: uppercase; white-space: nowrap; font-weight: 600; }
+  .progress-track { flex: 1; height: 6px; background: var(--surface2); border-radius: 4px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.4s cubic-bezier(0.4,0,0.2,1); width: 0%; }
+  .progress-score { font-size: 14px; font-weight: 700; color: var(--accent); min-width: 56px; text-align: right; }
+
+  /* Main */
+  .main { max-width: 780px; margin: 0 auto; padding: 36px 40px 80px; }
+  .section-label { font-size: 11px; letter-spacing: 0.12em; color: var(--text3); text-transform: uppercase; margin-bottom: 20px; font-weight: 600; }
+
+  /* Dimension card */
+  .dimension {
+    margin-bottom: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .dimension:hover { border-color: var(--border2); box-shadow: 0 2px 12px rgba(0,107,60,0.08); }
+  .dim-header { padding: 20px 22px 0; display: flex; align-items: flex-start; gap: 14px; }
+  .dim-number {
+    font-size: 11px; color: #ffffff; margin-top: 2px;
+    min-width: 24px; height: 24px; background: var(--accent);
+    border-radius: 50%; display: flex; align-items: center;
+    justify-content: center; font-weight: 700; flex-shrink: 0;
+  }
+  .dim-meta { flex: 1; }
+  .dim-title { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+  .dim-desc { font-size: 13px; color: var(--text2); line-height: 1.55; }
+  .dim-score-display { font-size: 12px; font-weight: 700; color: var(--accent); min-width: 44px; text-align: right; margin-top: 3px; }
+
+  .dim-options { padding: 14px 22px 18px 60px; display: flex; flex-direction: column; gap: 7px; }
+
+  /* Option */
+  .option {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface);
+  }
+  .option:hover { border-color: var(--accent-mid); background: var(--accent-light); }
+  .option.selected { border-color: var(--accent); background: var(--accent-light); }
+  .option-radio {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--border2);
+    margin-top: 1px; flex-shrink: 0;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff;
+  }
+  .option.selected .option-radio { border-color: var(--accent); background: var(--accent); }
+  .option.selected .option-radio::after {
+    content: ''; width: 6px; height: 6px;
+    border-radius: 50%; background: #fff; display: block;
+  }
+  .option-content { flex: 1; }
+  .option-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+  .option-detail { font-size: 12px; color: var(--text2); line-height: 1.5; }
+  .option-points { font-size: 11px; color: var(--text3); margin-top: 2px; flex-shrink: 0; font-weight: 600; }
+  .option.selected .option-points { color: var(--accent); }
+
+  /* Result */
+  .result {
+    margin-top: 36px; border-radius: 10px; padding: 32px;
+    border: 1.5px solid var(--border); background: var(--surface);
+    display: none;
+  }
+  .result.visible { display: block; }
+  .result-band { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; }
+  .result-score-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 14px; }
+  .result-score { font-size: 72px; line-height: 1; letter-spacing: -0.03em; font-weight: 700; }
+  .result-denom { font-size: 18px; color: var(--text3); font-weight: 400; }
+  .result-verdict { font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+  .result-desc { font-size: 14px; color: var(--text2); line-height: 1.75; max-width: 540px; }
+  .result-breakdown { margin-top: 24px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .breakdown-item {
+    border-radius: 8px; padding: 11px 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .breakdown-label { font-size: 12px; color: var(--text2); font-weight: 500; }
+  .breakdown-val { font-size: 12px; font-weight: 700; }
+
+  .band-build { color: var(--green); }
+  .band-hybrid { color: var(--amber); }
+  .band-reconsider { color: var(--red); }
+  .result.band-build-bg { border-color: #b8d4a8; background: linear-gradient(135deg,#ffffff,#f0f8f4); }
+  .result.band-hybrid-bg { border-color: #f0d090; background: linear-gradient(135deg,#ffffff,#fdf9f0); }
+  .result.band-reconsider-bg { border-color: #f0b8b0; background: linear-gradient(135deg,#ffffff,#fdf4f2); }
+
+  .reset-btn {
+    margin-top: 22px; padding: 10px 24px;
+    background: transparent; border: 1.5px solid var(--border2);
+    border-radius: 8px; color: var(--text2);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s;
+  }
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+
+  @media (max-width: 600px) {
+    .header { padding: 32px 20px 24px; }
+    .header h1 { font-size: 36px; }
+    .main { padding-left: 16px; padding-right: 16px; }
+    .progress-section { padding-left: 16px; padding-right: 16px; }
+    .result-breakdown { grid-template-columns: 1fr; }
+    .dim-options { padding-left: 22px; }
+    .result-score { font-size: 52px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-label">AI Readiness Framework &nbsp;·&nbsp; Digital &amp; AI</div>
+    <h1>Build<strong>IQ</strong></h1>
+    <p>Score your use case across five dimensions before committing to an AI build. Know when AI earns its place — and when it doesn't.</p>
+  </div>
+</div>
+
+<div class="progress-section">
+  <div class="progress-inner">
+    <span class="progress-label">Score</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-score" id="progressScore">0 / 100</span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="section-label">Five dimensions &middot; 20 points each</div>
+
+  <!-- DIMENSION 1 -->
+  <div class="dimension" id="dim-problem_clarity">
+    <div class="dim-header">
+      <span class="dim-number">1</span>
+      <div class="dim-meta">
+        <div class="dim-title">Problem clarity</div>
+        <div class="dim-desc">How well-defined, stable, and bounded is the problem you're solving?</div>
+      </div>
+      <div class="dim-score-display" id="s-problem_clarity">&#8212; / 20</div>
+    </div>
+    <div class="dim-options">
+      <div class="option" data-dim="problem_clarity" data-pts="20">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Fully defined</div><div class="option-detail">Clear scope, stable requirements, measurable outcomes agreed.</div></div>
+        <div class="option-points">20 pts</div>
+      </div>
+      <div class="option" data-dim="problem_clarity" data-pts="13">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Mostly defined</div><div class="option-detail">Core problem is clear but some edge cases or requirements are still open.</div></div>
+        <div class="option-points">13 pts</div>
+      </div>
+      <div class="option" data-dim="problem_clarity" data-pts="7">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Partially defined</div><div class="option-detail">Problem is understood broadly but scope is still shifting.</div></div>
+        <div class="option-points">7 pts</div>
+      </div>
+      <div class="option" data-dim="problem_clarity" data-pts="0">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Poorly defined</div><div class="option-detail">Problem is vague, stakeholder alignment is missing, or scope changes frequently.</div></div>
+        <div class="option-points">0 pts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIMENSION 2 -->
+  <div class="dimension" id="dim-data_readiness">
+    <div class="dim-header">
+      <span class="dim-number">2</span>
+      <div class="dim-meta">
+        <div class="dim-title">Data readiness</div>
+        <div class="dim-desc">Is the data structured, accessible, and sufficient in volume and quality?</div>
+      </div>
+      <div class="dim-score-display" id="s-data_readiness">&#8212; / 20</div>
+    </div>
+    <div class="dim-options">
+      <div class="option" data-dim="data_readiness" data-pts="20">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Production-ready</div><div class="option-detail">Clean, labelled, high-volume data available with established pipelines.</div></div>
+        <div class="option-points">20 pts</div>
+      </div>
+      <div class="option" data-dim="data_readiness" data-pts="13">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Available but needs work</div><div class="option-detail">Data exists but requires significant cleaning, enrichment, or structuring.</div></div>
+        <div class="option-points">13 pts</div>
+      </div>
+      <div class="option" data-dim="data_readiness" data-pts="7">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Partial or fragmented</div><div class="option-detail">Data is incomplete, siloed, or available only for a subset of the use case.</div></div>
+        <div class="option-points">7 pts</div>
+      </div>
+      <div class="option" data-dim="data_readiness" data-pts="0">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Not available</div><div class="option-detail">Data doesn't exist yet, requires manual collection, or access is blocked.</div></div>
+        <div class="option-points">0 pts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIMENSION 3 -->
+  <div class="dimension" id="dim-complexity_justification">
+    <div class="dim-header">
+      <span class="dim-number">3</span>
+      <div class="dim-meta">
+        <div class="dim-title">Complexity justification</div>
+        <div class="dim-desc">Does the problem genuinely require AI, or would rules-based logic suffice?</div>
+      </div>
+      <div class="dim-score-display" id="s-complexity_justification">&#8212; / 20</div>
+    </div>
+    <div class="dim-options">
+      <div class="option" data-dim="complexity_justification" data-pts="20">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">AI is clearly justified</div><div class="option-detail">Inputs are unstructured, patterns are non-linear, or variation exceeds rules-based capacity.</div></div>
+        <div class="option-points">20 pts</div>
+      </div>
+      <div class="option" data-dim="complexity_justification" data-pts="13">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">AI adds meaningful value</div><div class="option-detail">Some components benefit from AI but others could be handled deterministically.</div></div>
+        <div class="option-points">13 pts</div>
+      </div>
+      <div class="option" data-dim="complexity_justification" data-pts="7">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Borderline</div><div class="option-detail">A well-designed workflow or formula might solve this — AI provides marginal uplift.</div></div>
+        <div class="option-points">7 pts</div>
+      </div>
+      <div class="option" data-dim="complexity_justification" data-pts="0">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">AI is not needed</div><div class="option-detail">Rules-based logic, a lookup, or a formula solves this faster and more reliably.</div></div>
+        <div class="option-points">0 pts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIMENSION 4 -->
+  <div class="dimension" id="dim-architecture_fit">
+    <div class="dim-header">
+      <span class="dim-number">4</span>
+      <div class="dim-meta">
+        <div class="dim-title">Architecture fit</div>
+        <div class="dim-desc">Is the proposed architecture designed to scale, audit, and recover from model drift?</div>
+      </div>
+      <div class="dim-score-display" id="s-architecture_fit">&#8212; / 20</div>
+    </div>
+    <div class="dim-options">
+      <div class="option" data-dim="architecture_fit" data-pts="20">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Fully considered</div><div class="option-detail">Data flow, model versioning, output validation, and drift monitoring are all planned.</div></div>
+        <div class="option-points">20 pts</div>
+      </div>
+      <div class="option" data-dim="architecture_fit" data-pts="13">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Mostly considered</div><div class="option-detail">Core architecture is sound but some operational concerns are still open.</div></div>
+        <div class="option-points">13 pts</div>
+      </div>
+      <div class="option" data-dim="architecture_fit" data-pts="7">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Partially considered</div><div class="option-detail">Architecture exists for the build phase but production and maintenance are underspecified.</div></div>
+        <div class="option-points">7 pts</div>
+      </div>
+      <div class="option" data-dim="architecture_fit" data-pts="0">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Not considered</div><div class="option-detail">Tool selected first; architecture is being designed around it. Rebuild risk is high.</div></div>
+        <div class="option-points">0 pts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIMENSION 5 -->
+  <div class="dimension" id="dim-roi_defensibility">
+    <div class="dim-header">
+      <span class="dim-number">5</span>
+      <div class="dim-meta">
+        <div class="dim-title">ROI defensibility</div>
+        <div class="dim-desc">Can you quantify expected value against build and maintenance cost over 24 months?</div>
+      </div>
+      <div class="dim-score-display" id="s-roi_defensibility">&#8212; / 20</div>
+    </div>
+    <div class="dim-options">
+      <div class="option" data-dim="roi_defensibility" data-pts="20">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Clearly quantified</div><div class="option-detail">Business case includes baseline, expected uplift, build cost, and 24-month TCO.</div></div>
+        <div class="option-points">20 pts</div>
+      </div>
+      <div class="option" data-dim="roi_defensibility" data-pts="13">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Directionally strong</div><div class="option-detail">Value is evident and rough numbers are defensible, but full TCO isn't modelled.</div></div>
+        <div class="option-points">13 pts</div>
+      </div>
+      <div class="option" data-dim="roi_defensibility" data-pts="7">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Assumed but unquantified</div><div class="option-detail">Stakeholders believe it will save time or money but no numbers are attached.</div></div>
+        <div class="option-points">7 pts</div>
+      </div>
+      <div class="option" data-dim="roi_defensibility" data-pts="0">
+        <div class="option-radio"></div>
+        <div class="option-content"><div class="option-label">Not assessed</div><div class="option-detail">No ROI analysis has been done. Decision is driven by trend or mandate, not value.</div></div>
+        <div class="option-points">0 pts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result" id="result">
+    <div class="result-band" id="resultBand"></div>
+    <div class="result-score-row">
+      <div class="result-score" id="resultScore"></div>
+      <div class="result-denom">/ 100</div>
+    </div>
+    <div class="result-verdict" id="resultVerdict"></div>
+    <div class="result-desc" id="resultDesc"></div>
+    <div class="result-breakdown" id="resultBreakdown"></div>
+    <button class="reset-btn" id="resetBtn">Start over</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  var scores = {};
+  var dims = ['problem_clarity','data_readiness','complexity_justification','architecture_fit','roi_defensibility'];
+  var dimLabels = {
+    'problem_clarity': 'Problem clarity',
+    'data_readiness': 'Data readiness',
+    'complexity_justification': 'Complexity justification',
+    'architecture_fit': 'Architecture fit',
+    'roi_defensibility': 'ROI defensibility'
+  };
+  var bands = {
+    build: {
+      label: 'Build with AI', cls: 'band-build', bgCls: 'band-build-bg',
+      verdict: 'Strong candidate for AI',
+      desc: 'Your use case scores well across all five dimensions. The problem is clear, data is ready, AI complexity is justified, the architecture is sound, and ROI is defensible. Proceed — but stay disciplined on architecture and maintain regular drift reviews post-launch.'
+    },
+    hybrid: {
+      label: 'Hybrid approach', cls: 'band-hybrid', bgCls: 'band-hybrid-bg',
+      verdict: 'Use AI selectively',
+      desc: 'AI adds value in specific components of this use case, but not end-to-end. Identify the highest-signal tasks and apply AI there; use deterministic logic elsewhere. Revisit dimensions scoring below 13 before committing to a full AI build.'
+    },
+    reconsider: {
+      label: 'Reconsider', cls: 'band-reconsider', bgCls: 'band-reconsider-bg',
+      verdict: 'Simpler solution likely wins',
+      desc: 'At this score, an AI build carries significant ROI and rebuild risk. Address the gaps surfaced below — particularly problem clarity, data readiness, and architecture — before proceeding. A rules-based or workflow solution will likely deliver better value faster.'
+    }
+  };
+
+  function getTotal() {
+    return dims.reduce(function(a, k) { return a + (scores[k] !== undefined ? scores[k] : 0); }, 0);
+  }
+  function getBand(t) { return t >= 80 ? 'build' : t >= 50 ? 'hybrid' : 'reconsider'; }
+
+  function updateProgress() {
+    var t = getTotal();
+    document.getElementById('progressFill').style.width = t + '%';
+    document.getElementById('progressScore').textContent = t + ' / 100';
+  }
+
+  function updateResult() {
+    var answered = dims.filter(function(k) { return scores[k] !== undefined; }).length;
+    var resultEl = document.getElementById('result');
+    if (answered < dims.length) { resultEl.classList.remove('visible'); resultEl.style.display = 'none'; return; }
+
+    var t = getTotal();
+    var band = getBand(t);
+    var b = bands[band];
+
+    resultEl.style.display = 'block';
+    resultEl.className = 'result visible ' + b.bgCls;
+    document.getElementById('resultBand').innerHTML = '<span class="' + b.cls + '">' + b.label + '</span>';
+
+    var scoreEl = document.getElementById('resultScore');
+    scoreEl.textContent = t;
+    scoreEl.style.color = band === 'build' ? 'var(--green)' : band === 'hybrid' ? 'var(--amber)' : 'var(--red)';
+    document.getElementById('resultVerdict').textContent = b.verdict;
+    document.getElementById('resultDesc').textContent = b.desc;
+
+    var html = '';
+    for (var i = 0; i < dims.length; i++) {
+      var k = dims[i];
+      var s = scores[k] !== undefined ? scores[k] : 0;
+      var c = s >= 16 ? 'var(--green)' : s >= 10 ? 'var(--amber)' : 'var(--red)';
+      html += '<div class="breakdown-item"><span class="breakdown-label">' + dimLabels[k] + '</span><span class="breakdown-val" style="color:' + c + '">' + s + ' / 20</span></div>';
+    }
+    document.getElementById('resultBreakdown').innerHTML = html;
+    setTimeout(function() { resultEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 150);
+  }
+
+  function handleOptionClick(e) {
+    var el = e.currentTarget;
+    var dimId = el.getAttribute('data-dim');
+    var pts = parseInt(el.getAttribute('data-pts'), 10);
+    scores[dimId] = pts;
+
+    var dimEl = document.getElementById('dim-' + dimId);
+    var opts = dimEl.querySelectorAll('.option');
+    for (var i = 0; i < opts.length; i++) opts[i].classList.remove('selected');
+    el.classList.add('selected');
+    document.getElementById('s-' + dimId).textContent = pts + ' / 20';
+    updateProgress();
+    updateResult();
+  }
+
+  function resetAll() {
+    scores = {};
+    var opts = document.querySelectorAll('.option');
+    for (var i = 0; i < opts.length; i++) opts[i].classList.remove('selected');
+    for (var j = 0; j < dims.length; j++) {
+      document.getElementById('s-' + dims[j]).textContent = '\u2014 / 20';
+    }
+    document.getElementById('progressFill').style.width = '0%';
+    document.getElementById('progressScore').textContent = '0 / 100';
+    var resultEl = document.getElementById('result');
+    resultEl.classList.remove('visible');
+    resultEl.style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // Attach event listeners after DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    var options = document.querySelectorAll('.option');
+    for (var i = 0; i < options.length; i++) {
+      options[i].addEventListener('click', handleOptionClick);
+    }
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
+  });
+
+  // Fallback if DOMContentLoaded already fired
+  if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    var options = document.querySelectorAll('.option');
+    for (var i = 0; i < options.length; i++) {
+      options[i].addEventListener('click', handleOptionClick);
+    }
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
+  }
+})();
+</script>
+</body>
+</html>
